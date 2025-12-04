@@ -1,0 +1,21 @@
+# Core Google Earth Engine API
+earthengine-api
+google-cloud-storage
+
+# Geoespacial y Visualización (Usados en el Notebook)
+geemap
+geopandas
+mapclassify
+
+# Procesamiento de Datos y Álgebra de Arreglos
+numpy
+pandas
+
+# Manejo de Geometrías y Archivos Ráster/Vectorial
+shapely
+rasterio
+fiona
+
+#Backend
+fastapi "uvicorn[standard]"
+pydantic
