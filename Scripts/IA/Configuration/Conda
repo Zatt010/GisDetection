@@ -1,0 +1,5 @@
+conda create -n geospatial_project python=3.9
+
+conda activate geospatial_project
+
+
