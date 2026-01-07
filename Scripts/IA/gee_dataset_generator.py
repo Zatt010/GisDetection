@@ -10,80 +10,69 @@ except Exception as e:
 
 AOI = ee.Geometry.Rectangle([-66.35, -17.50, -65.90, -17.20])
 
+
 CLASES_A_EXTRAER = {
-    'Cobertura_1_Bosque': 10, 
-    'Cobertura_2_SueloDesnudo': 80, 
-    'Cobertura_3_Infraestructura': 50 
+    'Bosque': 10,
+    'Matorrales': 20,
+    'Pastizales': 30,
+    'Tierras_Agricolas': 40,
+    'Infraestructura': 50,
+    'Suelo_Desnudo': 60,  # Corregido
+    'Agua': 80 
 }
 
-NUM_MUESTRAS_POR_CLASE = 5000 
-
-
+PATCH_SIZE = 128  # Tamaño del parche en pixeles (128x128)
 BANDAS_S2 = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8']
 
-
-# Carga la imagen de Sentinel-2 para las bandas espectrales
 def get_sentinel_image(aoi):
-
     s2_collection = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED') \
         .filterDate('2024-05-01', '2024-09-30') \
         .filterBounds(aoi) \
-        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) 
-    
+        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 10)) 
     
     image_composite = s2_collection.median()
-    
-    print(f"Generating Median composite (May-Sept) for the area.")
-    
-    # Seleccion de bandas y recorte
     return image_composite.select(BANDAS_S2).clip(aoi).toFloat()
 
-worldcover = ee.Image('ESA/WorldCover/v200/2021').select('Map').clip(AOI)
+def export_cnn_data(s2_image, aoi):
+    
+    print("Iniciando exportación para CNN...")
 
+    task_img = ee.batch.Export.image.toDrive(
+        image=s2_image,
+        description='Sentinel2_Image_For_CNN',
+        folder='CNN_Training_Data',
+        fileNamePrefix='S2_Data',
+        region=aoi,
+        scale=10,
+        fileFormat='GeoTIFF',
+        maxPixels=1e13
+    )
+    task_img.start()
+    print("- Tarea de imagen satelital enviada a Drive.")
 
-def export_training_samples(s2_image, class_map, aoi, num_samples):
-    export_tasks = [] 
-    for class_name, wc_value in class_map.items():
-        print(f"Sampling: {class_name}...")
-        
-        class_mask = worldcover.eq(wc_value)
-        training_image = s2_image.updateMask(class_mask).addBands(ee.Image.constant(CLASES_A_EXTRAER[class_name]).rename('class'))
-        
-        samples = training_image.sample(
-            region=aoi,
-            scale=10, 
-            numPixels=num_samples, 
-            seed=42,
-            tileScale=8,
-            geometries=False 
-        )
-        
-        task = ee.batch.Export.table.toDrive(
-            collection=samples,
-            description=f'Dataset_{class_name}', 
-            folder='GEE_Training_Data_FIXED', 
-            fileNamePrefix=class_name,
-            fileFormat='CSV',
-            selectors=BANDAS_S2 + ['class'] 
-        )
-        task.start()
-        export_tasks.append(task)
-    return export_tasks
-
+    worldcover = ee.Image('ESA/WorldCover/v200/2021').select('Map').clip(aoi)
+    
+    task_label = ee.batch.Export.image.toDrive(
+        image=worldcover,
+        description='WorldCover_Labels_For_CNN',
+        folder='CNN_Training_Data',
+        fileNamePrefix='Labels_Data',
+        region=aoi,
+        scale=10,
+        fileFormat='GeoTIFF',
+        maxPixels=1e13
+    )
+    task_label.start()
+    print("- Tarea de etiquetas (labels) enviada a Drive.")
 
 if __name__ == "__main__":
     if 'ee' in globals():
         try:
             s2_img = get_sentinel_image(AOI)
+            export_cnn_data(s2_img, AOI)
             
-            tasks = export_training_samples(s2_img, CLASES_A_EXTRAER, AOI, NUM_MUESTRAS_POR_CLASE)
+            print("\n--- PROCESO INICIADO ---")
+            print("Revisa: https://code.earthengine.google.com/tasks")
             
-            print("\nExport started. CHECK GEE to monitor progress:")
-         
-            print("   - URL: https://code.earthengine.google.com/tasks")
-            print(f"   - Se crearán {len(tasks)} archivos CSV en la carpeta 'GEE_Training_Data' de tu Drive.")
-            
-        except ValueError as ve:
-            print(f"Error de datos: {ve}")
         except Exception as e:
             print(f"Error general: {e}")
