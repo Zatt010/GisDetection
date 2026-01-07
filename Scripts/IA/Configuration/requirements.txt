@@ -19,3 +19,8 @@ fiona
 #Backend
 fastapi "uvicorn[standard]"
 pydantic
+
+rasterio 
+patchify 
+tensorflow 
+scikit-learn
