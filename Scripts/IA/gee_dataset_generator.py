@@ -17,11 +17,11 @@ CLASES_A_EXTRAER = {
     'Pastizales': 30,
     'Tierras_Agricolas': 40,
     'Infraestructura': 50,
-    'Suelo_Desnudo': 60,  # Corregido
+    'Suelo_Desnudo': 60,  
     'Agua': 80 
 }
 
-PATCH_SIZE = 128  # Tamaño del parche en pixeles (128x128)
+PATCH_SIZE = 128  # Parche en pixeles (128x128)
 BANDAS_S2 = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8']
 
 def get_sentinel_image(aoi):
