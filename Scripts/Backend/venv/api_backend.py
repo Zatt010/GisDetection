@@ -74,22 +74,35 @@ def export_to_drive_task(image, year, roi):
 
 initialize_gee()
 
-
 @app.post("/predict_area/")
 async def predict_area(file: UploadFile = File(...)):
     contents = await file.read()
+    
     with rasterio.open(io.BytesIO(contents)) as src:
         profile = src.profile
         img_raw = src.read().transpose(1, 2, 0)
         res_x, res_y = src.res
-        valid_mask = np.max(img_raw, axis=-1) > 0 
-        img = np.nan_to_num(img_raw) / 10000.0
-
-    # Inferencia
-    h, w, c = img.shape
-    img_padded = np.pad(img, ((0, (64 - h % 64) % 64), (0, (64 - w % 64) % 64), (0, 0)), mode='constant')
-    patches = patchify(img_padded, (64, 64, c), step=32)
+        
+    h, w, c = img_raw.shape
     
+    valid_mask = np.max(img_raw, axis=-1) > 0 
+
+    if c == 3:
+        padding_channels = np.zeros((h, w, 4), dtype=img_raw.dtype)
+        img_raw = np.concatenate([img_raw, padding_channels], axis=-1)
+        img = np.nan_to_num(img_raw).astype(np.float32) * (10000.0 / 255.0)
+    elif c == 7:
+        img = np.nan_to_num(img_raw).astype(np.float32)
+    else:
+        return {"status": "error", "message": f"Canales no soportados: {c}"}
+
+    img_normalized = img / 10000.0
+
+    h_pad = (64 - h % 64) % 64
+    w_pad = (64 - w % 64) % 64
+    img_padded = np.pad(img_normalized, ((0, h_pad), (0, w_pad), (0, 0)), mode='constant', constant_values=0)
+    
+    patches = patchify(img_padded, (64, 64, 7), step=32) 
     output_probs = np.zeros((img_padded.shape[0], img_padded.shape[1], 7), dtype=np.float32)
     counts = np.zeros((img_padded.shape[0], img_padded.shape[1], 1), dtype=np.float32)
 
@@ -100,23 +113,44 @@ async def predict_area(file: UploadFile = File(...)):
             output_probs[y:y+64, x:x+64, :] += preds[j]
             counts[y:y+64, x:x+64] += 1.0
 
-    final_map = np.argmax(output_probs / np.maximum(counts, 1.0), axis=-1).astype(np.uint8)[:h, :w]
+    final_map = np.argmax(output_probs / np.maximum(counts, 1.0), axis=-1).astype(np.uint8)
+    
+    final_map = final_map[:h, :w]
+    
     final_map[~valid_mask] = 99 
 
-    # hectaresa
+    
     area_px = abs(res_x * res_y)
     classes = ['Bosque', 'Matorrales', 'Pastizales', 'T_Agricolas', 'Infraestructura', 'Suelo_Desnudo', 'Agua']
-    results = {name: round(float((np.sum(final_map == i).item() * area_px) / 10000.0), 2) for i, name in enumerate(classes)}
+    
+    
+    results = {
+        name: round(float((np.sum((final_map == i) & valid_mask).item() * area_px) / 10000.0), 2) 
+        for i, name in enumerate(classes)
+    }
+    
+    area_px = abs(res_x * res_y)
+    classes = ['Bosque', 'Matorrales', 'Pastizales', 'T_Agricolas', 'Infraestructura', 'Suelo_Desnudo', 'Agua']
+    
+    
+    results = {
+        name: round(float((np.sum((final_map == i) & valid_mask).item() * area_px) / 10000.0), 2) 
+        for i, name in enumerate(classes)
+    }
 
-    # Guardar MASCARA PARA PINTADO
     result_id = f"mask_{uuid.uuid4().hex}.tif"
     result_path = os.path.join(TEMP_DIR, result_id)
     new_profile = profile.copy()
+
     new_profile.update(count=1, dtype='uint8', nodata=99)
+    
     with rasterio.open(result_path, 'w', **new_profile) as dst:
         dst.write(final_map, 1)
 
-    return {"analisis_hectareas": results, "processed_file_url": f"http://127.0.0.1:8000/download/{result_id}"}
+    return {
+        "analisis_hectareas": results, 
+        "processed_file_url": f"http://127.0.0.1:8000/download/{result_id}"
+    }
 
 @app.get("/download/{filename}")
 async def download_file(filename: str):
