@@ -6,7 +6,7 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from patchify import patchify
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import Body
 import io
 import uuid
@@ -162,65 +162,87 @@ async def search_recent_image(data: dict = Body(...)):
         coords = data.get("coords")
         roi = ee.Geometry.Polygon(coords)
         
-        # Fecha actual del sistema
-        now = datetime.now().strftime('%Y-%m-%d')
         
-        # Buscar en Sentinel-2 los últimos 3 meses desde hoy para asegurar encontrar algo sin nubes
+        ahora = datetime.now()
+        hace_4_meses = (ahora - timedelta(days=120)).strftime('%Y-%m-%d')
+        hoy_str = ahora.strftime('%Y-%m-%d')
+        
+        
         collection = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED") \
             .filterBounds(roi) \
-            .filterDate('2024-10-01', now) \
-            .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 10)) \
-            .sort('system:time_start', False) # El más reciente primero
+            .filterDate(hace_4_meses, hoy_str)
+
+        # --- OPCIÓN A: LA "IDEAL" 
+        ideal_img = collection.filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 10)) \
+                              .sort('system:time_start', False) \
+                              .first()
+
         
-        image = collection.first()
-        
-        if not image:
-            return {"status": "error", "message": "No se encontró imagen reciente sin nubes."}
-        
-        # Obtener metadatos para mostrar al usuario
-        info = image.getInfo()
-        date_str = datetime.fromtimestamp(info['properties']['system:time_start']/1000).strftime('%Y-%m-%d %H:%M')
-        clouds = info['properties']['CLOUDY_PIXEL_PERCENTAGE']
+        recent_images = collection.sort('system:time_start', False).limit(3).getInfo()['features']
+
+        options = []
+
+        if ideal_img:
+            info_ideal = ideal_img.getInfo()
+            options.append({
+                "label": "Óptima (Pocas nubes)",
+                "date": datetime.fromtimestamp(info_ideal['properties']['system:time_start']/1000).strftime('%Y-%m-%d %H:%M'),
+                "clouds": f"{info_ideal['properties']['CLOUDY_PIXEL_PERCENTAGE']:.2f}%",
+                "id": info_ideal['id'],
+                "is_ideal": True
+            })
+
+        for img in recent_images:
+            img_id = img['id']
+            # Evitar repetir la imagen
+            if ideal_img and img_id == info_ideal['id']:
+                continue
+                
+            date_val = datetime.fromtimestamp(img['properties']['system:time_start']/1000).strftime('%Y-%m-%d %H:%M')
+            options.append({
+                "label": "Reciente",
+                "date": date_val,
+                "clouds": f"{img['properties']['CLOUDY_PIXEL_PERCENTAGE']:.2f}%",
+                "id": img_id,
+                "is_ideal": False
+            })
+
+        if not options:
+            return {"status": "error", "message": "No se encontraron imágenes en los últimos 4 meses."}
         
         return {
             "status": "success",
-            "date": date_str,
-            "clouds": f"{clouds:.2f}%",
-            "id": info['id']
+            "options": options[:4] 
         }
+        
     except Exception as e:
+        print(f"Error en search_recent_image: {e}")
         return {"status": "error", "message": str(e)}
 
 @app.post("/confirm_export/")
 async def confirm_export(data: dict = Body(...)):
     try:
         coords = data.get("coords")
+        image_id = data.get("image_id") 
         roi = ee.Geometry.Polygon(coords)
         
-        now = datetime.now().strftime('%Y-%m-%d')
-        collection = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED") \
-            .filterBounds(roi) \
-            .filterDate('2024-01-01', now) \
-            .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 15)) \
-            .sort('system:time_start', False)
-        
-        recent_img = collection.first()
-        
-        if not recent_img:
-            return {"status": "error", "message": "No se encontró una imagen válida para exportar."}
+        if not image_id:
+            return {"status": "error", "message": "No se seleccionó ninguna imagen."}
 
-        info = recent_img.getInfo()
+        selected_img = ee.Image(image_id)
+        
+        info = selected_img.getInfo()
         timestamp = info['properties']['system:time_start']
         anio_detectado = datetime.fromtimestamp(timestamp/1000).year
         
         BANDS_TO_SELECT = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8']
-        final_img = recent_img.select(BANDS_TO_SELECT).clip(roi).toFloat()
+        final_img = selected_img.select(BANDS_TO_SELECT).clip(roi).toFloat()
 
         task = ee.batch.Export.image.toDrive(
             image=final_img,
-            description=f'S2_PNT_Reciente_{anio_detectado}_Export',
+            description=f'S2_PNT_{anio_detectado}_Manual',
             folder=FOLDER_NAME,
-            fileNamePrefix=f'S2_PNT_Reciente_{anio_detectado}', 
+            fileNamePrefix=f'S2_PNT_{anio_detectado}_sel', 
             region=roi.bounds().getInfo()['coordinates'], 
             scale=10,
             fileFormat='GeoTIFF',
@@ -228,15 +250,12 @@ async def confirm_export(data: dict = Body(...)):
         )
         task.start()
 
-        monitoring_url = "https://code.earthengine.google.com/tasks"
-        
         return {
             "status": "success", 
-            "message": f"Exportación iniciada para el año {anio_detectado}",
-            "monitoringUrl": monitoring_url
+            "message": f"Exportación iniciada para la fecha seleccionada",
+            "monitoringUrl": "https://code.earthengine.google.com/tasks"
         }
     except Exception as e:
-        print(f"Error en confirm_export: {e}")
         return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
