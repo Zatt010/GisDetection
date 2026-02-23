@@ -45,7 +45,7 @@ const App: React.FC = () => {
     const [droneMarkers] = useState<any[]>([]);
     const [tempCoords, setTempCoords] = useState<any>(null);
     const [imageInfo, setImageInfo] = useState<any>(null);
-
+    const [selectedId, setSelectedId] = useState<string | null>(null);
     // Helpers de Estilo
     const getBadgeClass = (clase: string) => {
         const c = clase.toLowerCase();
@@ -115,6 +115,7 @@ const App: React.FC = () => {
         if (file) processFile(file);
     };
 
+    
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
@@ -144,18 +145,24 @@ const App: React.FC = () => {
         }
     };
 
-    const handleConfirmDownload = async () => {
-        if (!tempCoords) return;
+    const handleConfirmDownload = async (imgId: string | null) => {
+        if (!tempCoords || !imgId) return;
         setLoading(true);
         try {
-            const res = await axios.post('http://127.0.0.1:8000/confirm_export/', { coords: tempCoords });
+            // Ahora enviamos también el ID específico de la imagen seleccionada
+            const res = await axios.post('http://127.0.0.1:8000/confirm_export/', { 
+                coords: tempCoords,
+                image_id: imgId 
+            });
+            
             if (res.data.status === "success") {
                 window.open("https://code.earthengine.google.com/tasks", '_blank');
                 setImageInfo(null);
                 setTempCoords(null);
+                setSelectedOptionId(null);
             }
         } catch (error) {
-            alert("Error en la comunicación con el servidor.");
+            alert("Error al iniciar exportación.");
         } finally {
             setLoading(false);
         }
@@ -198,18 +205,40 @@ const App: React.FC = () => {
                 </section>
 
                 {/* Panel Sentinel GEE */}
-                {imageInfo && (
+                {imageInfo && imageInfo.options && (
                     <div className="confirm-box">
                         <div className="confirm-header">
-                            <h4>Sentinel-2 Detectada</h4>
+                            <h4>Seleccionar Imagen Sentinel-2</h4>
                             <button className="close-btn" onClick={() => setImageInfo(null)}>×</button>
                         </div>
-                        <div className="info-grid">
-                            <span>📅 {imageInfo.date}</span>
-                            <span>☁️ {imageInfo.clouds}% nubes</span>
+                        
+                        <div className="options-selector-container">
+                            {imageInfo.options.map((opt: any) => (
+                                <div 
+                                    key={opt.id}
+                                    className={`option-item ${selectedId === opt.id ? 'selected' : ''} ${opt.is_ideal ? 'ideal' : ''}`}
+                                    onClick={() => setSelectedId(opt.id)}
+                                >
+                                    <div className="option-radio">
+                                        <div className="radio-circle"></div>
+                                    </div>
+                                    <div className="option-details">
+                                        <span className="opt-date">📅 {opt.date}</span>
+                                        <span className={`opt-clouds ${parseFloat(opt.clouds) > 15 ? 'cloudy' : 'clear'}`}>
+                                            ☁️ {opt.clouds} nubes
+                                        </span>
+                                        {opt.is_ideal && <span className="best-tag">RECOMENDADA</span>}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                        <button className="btn-primary" onClick={handleConfirmDownload}>
-                            Exportar a Drive
+
+                        <button 
+                            className="btn-primary" 
+                            onClick={() => handleConfirmDownload(selectedId)}
+                            disabled={!selectedId} // No deja avanzar sin una 
+                        >
+                            Confirmar y Exportar
                         </button>
                     </div>
                 )}
