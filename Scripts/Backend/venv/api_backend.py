@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 from fastapi.staticfiles import StaticFiles
+=======
+>>>>>>> 3d9c498a1b922e991552aacc978efb95208c1338
 import os
 import numpy as np
 import rasterio
@@ -9,6 +12,7 @@ from fastapi.responses import FileResponse
 from patchify import patchify
 from datetime import datetime, timedelta
 from fastapi import Body
+<<<<<<< HEAD
 from fastapi import BackgroundTasks
 import json
 import io
@@ -26,6 +30,11 @@ from rasterio.transform import from_bounds
 import math
 from PIL import Image
 import io
+=======
+import io
+import uuid
+import ee
+>>>>>>> 3d9c498a1b922e991552aacc978efb95208c1338
 
 app = FastAPI()
 
@@ -38,10 +47,17 @@ app.add_middleware(
 )
 FOLDER_NAME = 'Tesis_PNT_Sentinel'
 # --- CONFIGURACIÓN DE RUTAS ---
+<<<<<<< HEAD
 BASE_PATH = r"C:\Users\afuhe\Desktop\materias\PG\Scripts\IA"
 
 # Modelo IA
 MODEL_PATH = os.path.join(BASE_PATH, 'modelo_unet_pro_final.keras')
+=======
+BASE_PATH = r"C:\Users\afuhe\OneDrive\Escritorio\materias\PG\Scripts\IA"
+
+# Modelo IA
+MODEL_PATH = os.path.join(BASE_PATH, 'modelo_unet_final_tesis.keras')
+>>>>>>> 3d9c498a1b922e991552aacc978efb95208c1338
 model = tf.keras.models.load_model(MODEL_PATH) 
 
 TEMP_DIR = os.path.join(BASE_PATH, "temp_outputs")
@@ -50,6 +66,7 @@ if not os.path.exists(TEMP_DIR):
 
 PROJECT_ID = 'aifinal-480001' 
 
+<<<<<<< HEAD
 
 
 CLASES_ENTRENADAS = [10, 50, 60]
@@ -60,6 +77,8 @@ os.makedirs(TILES_DIR, exist_ok=True)
 app.mount("/tiles_outputs", StaticFiles(directory=TILES_DIR), name="tiles_outputs")
 job_status = {}
 
+=======
+>>>>>>> 3d9c498a1b922e991552aacc978efb95208c1338
 def initialize_gee():
     try:
         ee.Initialize(project=PROJECT_ID) 
@@ -68,6 +87,7 @@ def initialize_gee():
         print(f"Error de inicialización: {e}")
         print("Intentando autenticación manual...")
       
+<<<<<<< HEAD
 def tile_to_bbox(x, y, z):
     """Convert XYZ tile to lat/lng bounds"""
     n = 2 ** z
@@ -211,6 +231,8 @@ def run_tiling_job(job_id: str, tif_path: str, file_id: str, bounds_wgs84: tuple
         import traceback; traceback.print_exc()
         job_status[job_id] = {"status": "error", "message": str(e)}
         if os.path.exists(tif_path): os.remove(tif_path)
+=======
+>>>>>>> 3d9c498a1b922e991552aacc978efb95208c1338
 
 def get_best_image_mosaic(year, roi):
     BANDS_TO_SELECT = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8']
@@ -241,6 +263,7 @@ def export_to_drive_task(image, year, roi):
 
 
 initialize_gee()
+<<<<<<< HEAD
 @app.post("/upload_orthomosaic/")
 async def upload_orthomosaic(file: UploadFile = File(...), background_tasks: BackgroundTasks = BackgroundTasks()):
     try:
@@ -357,6 +380,8 @@ async def get_temp_file(filename: str):
         return FileResponse(file_path)
     else:
         return {"status": "error", "message": "File not found"}
+=======
+>>>>>>> 3d9c498a1b922e991552aacc978efb95208c1338
 
 @app.post("/predict_area/")
 async def predict_area(file: UploadFile = File(...)):
@@ -436,6 +461,7 @@ async def predict_area(file: UploadFile = File(...)):
         "processed_file_url": f"http://127.0.0.1:8000/download/{result_id}"
     }
 
+<<<<<<< HEAD
 @app.post("/export_vector/{filename}")
 async def export_vector(filename: str, formato: str = "geojson"):
     try:
@@ -587,10 +613,13 @@ async def export_vector(filename: str, formato: str = "geojson"):
         print(f"Error en export_vector: {e}")
         return {"status": "error", "message": f"Error al exportar: {str(e)}"}
 
+=======
+>>>>>>> 3d9c498a1b922e991552aacc978efb95208c1338
 @app.get("/download/{filename}")
 async def download_file(filename: str):
     return FileResponse(os.path.join(TEMP_DIR, filename))
 
+<<<<<<< HEAD
 @app.get("/legend/{filename}")
 async def download_legend(filename: str):
     legend_path = os.path.join(TEMP_DIR, filename)
@@ -599,6 +628,8 @@ async def download_legend(filename: str):
     else:
         return {"status": "error", "message": "Legend file not found"}
 
+=======
+>>>>>>> 3d9c498a1b922e991552aacc978efb95208c1338
 @app.post("/search_recent_image/")
 async def search_recent_image(data: dict = Body(...)):
     try:

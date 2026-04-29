@@ -1,4 +1,5 @@
 *.tif
 
+
 # Google Cloud Service Account Credentials
 Scripts/Backend/gee_credentials/*.json
