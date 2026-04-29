@@ -3,7 +3,7 @@ name = "gis-detection-ia"
 version = "0.1.0"
 description = "Machine Learning and AI components for GIS Detection project"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"},
+    {name = "Aramis Fuentes", email = "Afuheho1@gmail.com"},
 ]
 dependencies = [
     # Core Google Earth Engine API

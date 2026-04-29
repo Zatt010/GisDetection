@@ -5,13 +5,13 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css'; 
 import './App.css'; 
 
-// Import custom hooks
+// Import  hooks
 import { useFileProcessor } from './hooks/useFileProcessor';
 import { useOrthomosaicProcessor } from './hooks/useOrthomosaicProcessor';
 import { useGoogleEarthEngine } from './hooks/useGoogleEarthEngine';
 import { useExportService } from './hooks/useExportService';
 
-// Import extracted components
+// Import  components
 import { MapView } from './components/map';
 import { UploadZone } from './components/upload';
 import { ResultsDisplay, ExportButtons } from './components/results';
@@ -20,7 +20,6 @@ import { ImageSelector } from './components/gee';
 import { LoadingOverlay } from './components/common';
 import ErrorAlert from './components/common/ErrorAlert';
 
-// Fix para iconos de Leaflet
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -34,13 +33,12 @@ const App: React.FC = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [mapInstance, setMapInstance] = useState<any>(null);
 
-    // Custom hooks for different functionalities
+    // Custom hooks 
     const fileProcessor = useFileProcessor();
     const orthomosaicProcessor = useOrthomosaicProcessor();
     const geeProcessor = useGoogleEarthEngine();
     const exportService = useExportService();
 
-    // Helper function for styling badges
     const getBadgeClass = (clase: string) => {
         const c = clase.toLowerCase();
         if (c.includes('bosque')) return 'bg-bosque';
@@ -89,7 +87,6 @@ const App: React.FC = () => {
         }
     };
 
-    // Export functionality - now handled by exportService hook
 
     // Determine overall loading state
     const isLoading = fileProcessor.loading || orthomosaicProcessor.loading || geeProcessor.loading;

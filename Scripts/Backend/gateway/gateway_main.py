@@ -1,6 +1,3 @@
-# ============================================================
-#  gateway/main.py  –  API Gateway
-# ============================================================
 import os
 import httpx
 from fastapi import FastAPI, UploadFile, File, Request
@@ -11,10 +8,10 @@ app = FastAPI(title="Geo API Gateway")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=["*"],  
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],  
+    allow_headers=["*"],  
     expose_headers=["*"]
 )
 
@@ -23,7 +20,7 @@ TILING_URL = os.getenv("TILING_SERVICE_URL", "http://tiling_service:8002")
 GEE_URL    = os.getenv("GEE_SERVICE_URL",    "http://gee_service:8003")
 EXPORT_URL = os.getenv("EXPORT_SERVICE_URL", "http://export_service:8004")
 
-TIMEOUT = httpx.Timeout(600.0)   # long timeout – ML inference can be slow
+TIMEOUT = httpx.Timeout(600.0)   
 
 
 # ── AI / U-Net ───────────────────────────────────────────────────────────────
@@ -43,6 +40,15 @@ async def upload_orthomosaic(file: UploadFile = File(...)):
     async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         resp = await client.post(
             f"{TILING_URL}/upload_orthomosaic/",
+            files={"file": (file.filename, await file.read(), file.content_type)},
+        )
+    return resp.json()
+
+@app.post("/process_orthomosaic/")
+async def process_orthomosaic(file: UploadFile = File(...)):
+    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+        resp = await client.post(
+            f"{TILING_URL}/process_orthomosaic/",
             files={"file": (file.filename, await file.read(), file.content_type)},
         )
     return resp.json()
@@ -88,6 +94,7 @@ async def download_file(filename: str):
     async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         resp = await client.get(f"{EXPORT_URL}/download/{filename}")
     return Response(
+        status_code=resp.status_code,
         content=resp.content,
         media_type=resp.headers.get("content-type", "application/octet-stream"),
     )

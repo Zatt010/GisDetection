@@ -1,6 +1,3 @@
-# ============================================================
-#  services/export_service/main.py  –  Vector Export & File Serving
-# ============================================================
 import os
 import zipfile
 import shutil
@@ -42,7 +39,6 @@ CLASS_COLORS = {
 
 
 def _load_gdf(filename: str):
-    """Load prediction raster and convert to GeoDataFrame."""
     result_path = os.path.join(TEMP_DIR, filename)
     if not os.path.exists(result_path):
         return None, "Archivo de predicción no encontrado"
@@ -108,13 +104,17 @@ async def export_vector(filename: str, formato: str = "geojson"):
         elif fmt == "shapefile":
             shp_dir  = os.path.join(TEMP_DIR, f"shapefile_{timestamp}")
             os.makedirs(shp_dir, exist_ok=True)
-            shp_path = os.path.join(shp_dir, f"prediction_{timestamp}")
+            
+            shp_path = os.path.join(shp_dir, f"prediction_{timestamp}.shp")
             gdf.to_file(shp_path, driver="ESRI Shapefile", encoding="utf-8")
 
             zip_path = os.path.join(TEMP_DIR, f"prediction_{timestamp}.zip")
-            with zipfile.ZipFile(zip_path, "w") as zipf:
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
                 for f in os.listdir(shp_dir):
-                    zipf.write(os.path.join(shp_dir, f), f)
+                    full_path = os.path.join(shp_dir, f)
+                    if os.path.isfile(full_path):  
+                        zipf.write(full_path, f)   
+
             shutil.rmtree(shp_dir)
 
             return {
@@ -175,7 +175,11 @@ async def export_vector(filename: str, formato: str = "geojson"):
 async def download_file(filename: str):
     file_path = os.path.join(TEMP_DIR, filename)
     if os.path.exists(file_path):
-        return FileResponse(file_path)
+        return FileResponse(
+            file_path,
+            filename=filename,
+            media_type="application/octet-stream"
+        )
     return {"status": "error", "message": "File not found"}
 
 

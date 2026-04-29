@@ -68,8 +68,8 @@ def _load_and_patch(config: PipelineConfig):
 
 # ── Model architecture ────────────────────────────────────────────────────────
 
-def _conv_block(x, filters: int):
-    """Double conv + BN + ReLU block."""
+def _conv_block(x, filters: int): #Double conv + NORMALIZACION + ReLU block.
+    
     for _ in range(2):
         x = layers.Conv2D(filters, 3, padding="same", kernel_initializer="he_normal")(x)
         x = layers.BatchNormalization()(x)
@@ -78,10 +78,7 @@ def _conv_block(x, filters: int):
 
 
 def build_unet_pro(input_shape: tuple, num_classes: int, lr: float) -> tf.keras.Model:
-    """
-    U-Net with 3 encoder levels + bottleneck + 3 decoder levels.
-    Dropout at every pooling and bottleneck layer to prevent overfitting.
-    """
+    
     inputs = layers.Input(input_shape)
 
     # Encoder

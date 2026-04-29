@@ -1,7 +1,3 @@
-"""
-Shared configuration and resources for the GIS Detection pipeline.
-All paths and hyperparameters live here — change once, applies everywhere.
-"""
 from dagster import ConfigurableResource
 from pydantic import Field
 import os
@@ -49,7 +45,7 @@ class PipelineConfig(ConfigurableResource):
             "Suelo_Desnudo", "Agua"
         ]
     )
-    # WorldCover pixel value → model class index
+    # WorldCover pixel 
     class_mapping: dict = Field(
         default={"10": 0, "20": 1, "30": 2, "40": 3, "50": 4, "60": 5, "80": 6}
     )

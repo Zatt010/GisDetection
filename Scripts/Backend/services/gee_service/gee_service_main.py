@@ -1,6 +1,3 @@
-# ============================================================
-#  services/gee_service/main.py  –  Google Earth Engine Service
-# ============================================================
 import os
 import ee
 from fastapi import FastAPI, Body

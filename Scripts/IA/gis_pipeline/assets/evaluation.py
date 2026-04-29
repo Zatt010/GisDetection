@@ -1,16 +1,8 @@
-"""
-Stage 3 — Evaluate the trained model and generate reports.
-
-Produces:
-  • metrics_v4.json         — classification report per class
-  • plots/confusion_matrix.png
-  • plots/training_history.png
-"""
 import os
 import json
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")  # headless — no display needed in pipeline
+matplotlib.use("Agg")  
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import classification_report, confusion_matrix
@@ -29,7 +21,7 @@ from gis_pipeline.assets.training import _load_and_patch
 
 @asset(
     group_name="model_evaluation",
-    deps=["train_unet"],          # runs after training
+    deps=["train_unet"],       
     description=(
         "Loads the saved model, runs predictions on the test split, "
         "and saves the confusion matrix + classification report."
@@ -54,7 +46,7 @@ def evaluate_model(
     context.log.info("Loading data for evaluation split...")
     X, Y = _load_and_patch(config)
     _, X_test, _, y_test = train_test_split(
-        X, Y, test_size=config.test_size, random_state=42  # same seed = same split
+        X, Y, test_size=config.test_size, random_state=42  
     )
     context.log.info(f"Test patches: {len(X_test)}")
 
@@ -135,7 +127,7 @@ def evaluate_model(
         plt.close(fig2)
         context.log.info(f"Training history plot saved → {history_plot_path}")
 
-    # ── Per-class accuracy summary ────────────────────────────────────────
+    # ── Per-class accuracy  ────────────────────────────────────────
     per_class = {
         name: round(report_dict[name]["f1-score"], 4)
         for name in config.class_names

@@ -159,7 +159,7 @@ Acceso a notebooks en: http://localhost:8888
 - **IoU**: 0.85
 
 
-## 🤖 Pipeline GIS con Dagster
+## Pipeline GIS con Dagster
 
 El proyecto incluye un pipeline completo de orquestación usando Dagster para automatizar todo el proceso de ML geoespacial:
 
@@ -177,7 +177,7 @@ Dagster GIS Pipeline
 
 ```bash
 # Ya incluido en pyproject.toml
-uv sync  # Instalará dagster>=1.5.0
+uv sync  #  dagster>=1.5.0
 ```
 
 ### Configuración de Google Earth Engine

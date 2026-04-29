@@ -1,10 +1,3 @@
-"""
-Dagster entry point — run the UI with:
-
-    uv run dagster dev -f gis_pipeline/definitions.py
-
-Then open: http://localhost:3000
-"""
 from dagster import Definitions, define_asset_job, ScheduleDefinition
 
 from gis_pipeline.assets import all_assets
@@ -12,29 +5,28 @@ from gis_pipeline.resources import PipelineConfig
 
 # ── Jobs ──────────────────────────────────────────────────────────────────────
 
-# Run the full pipeline end-to-end
 full_pipeline_job = define_asset_job(
     name="full_pipeline",
     selection=["gee_export", "train_unet", "evaluate_model"],
     description="Export GEE data → Train U-Net → Evaluate",
 )
 
-# Re-train only (skip GEE export if data already downloaded)
+# Re-train only 
 retrain_job = define_asset_job(
     name="retrain_and_evaluate",
     selection=["train_unet", "evaluate_model"],
     description="Train U-Net on existing TIF files → Evaluate",
 )
 
-# Evaluate only (model already trained)
+# Evaluate only (if model already trained)
 evaluate_job = define_asset_job(
     name="evaluate_only",
     selection=["evaluate_model"],
     description="Run evaluation on the saved model",
 )
 
-# ── Schedules (optional) ──────────────────────────────────────────────────────
-# Uncomment to run retraining every Monday at 02:00
+# ── Schedules ──────────────────────────────────────────────────────
+# Monday at 02:00
 # weekly_retrain = ScheduleDefinition(
 #     job=retrain_job,
 #     cron_schedule="0 2 * * 1",
@@ -45,9 +37,7 @@ evaluate_job = define_asset_job(
 defs = Definitions(
     assets=all_assets,
     resources={
-        # Default config — override any field in the Dagster UI (Launchpad)
         "config": PipelineConfig(),
     },
     jobs=[full_pipeline_job, retrain_job, evaluate_job],
-    # schedules=[weekly_retrain],  # uncomment if using the schedule above
 )
