@@ -1,0 +1,426 @@
+Metadata-Version: 2.4
+Name: gis-detection-ia
+Version: 0.1.0
+Summary: Machine Learning and AI components for GIS Detection project
+Author-email: Your Name <your.email@example.com>
+License: MIT
+Requires-Python: <3.10,>=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: earthengine-api
+Requires-Dist: google-cloud-storage>=3.3.0
+Requires-Dist: geemap>=0.36.5
+Requires-Dist: geopandas>=1.0.1
+Requires-Dist: mapclassify>=2.8.1
+Requires-Dist: numpy<2,>=1.26.4
+Requires-Dist: pandas>=2.3.1
+Requires-Dist: shapely>=2.0.6
+Requires-Dist: rasterio>=1.4.3
+Requires-Dist: fiona
+Requires-Dist: tensorflow>=2.20.0
+Requires-Dist: keras>=3.10.0
+Requires-Dist: scikit-learn>=1.6.1
+Requires-Dist: patchify>=0.2.3
+Requires-Dist: fastapi>=0.123.5
+Requires-Dist: uvicorn[standard]>=0.38.0
+Requires-Dist: pydantic>=2.12.5
+Requires-Dist: opencv-python<4.12.0.88,>=4.11.0.86
+Requires-Dist: scipy>=1.13.1
+Requires-Dist: matplotlib>=3.9.4
+Requires-Dist: seaborn>=0.13.2
+Requires-Dist: plotly>=6.3.0
+Requires-Dist: xarray>=2024.7.0
+Requires-Dist: pillow>=11.3.0
+Requires-Dist: pyproj>=3.6.1
+Requires-Dist: pyogrio>=0.11.0
+Requires-Dist: pycrs>=1.0.2
+Requires-Dist: morecantile>=6.2.0
+Requires-Dist: google-auth>=2.40.3
+Requires-Dist: google-auth-httplib2>=0.2.0
+Requires-Dist: google-api-core>=2.25.1
+Requires-Dist: google-api-python-client>=2.179.0
+Requires-Dist: googleapis-common-protos>=1.70.0
+Requires-Dist: google-resumable-media>=2.7.2
+Requires-Dist: google-crc32c>=1.7.1
+Requires-Dist: google-pasta>=0.2.0
+Requires-Dist: geeadd>=0.5.6
+Requires-Dist: gdown>=5.2.0
+Requires-Dist: tqdm>=4.67.1
+Requires-Dist: joblib>=1.5.1
+Requires-Dist: pyarrow>=21.0.0
+Requires-Dist: fsspec>=2025.6.0
+Requires-Dist: gcsfs>=2025.6.0
+Requires-Dist: ipykernel>=6.30.1
+Requires-Dist: ipython>=8.18.1
+Requires-Dist: ipywidgets>=8.1.7
+Requires-Dist: ipyleaflet>=0.20.0
+Requires-Dist: jupyterlab-widgets>=3.0.15
+Requires-Dist: python-dotenv>=1.2.1
+Requires-Dist: requests>=2.32.5
+Requires-Dist: pyyaml>=6.0.3
+Requires-Dist: click>=8.1.8
+Requires-Dist: rich>=14.2.0
+Requires-Dist: typer>=0.15.2
+Requires-Dist: dagster>=1.5.0
+Requires-Dist: dagster-webserver>=1.5.0
+Requires-Dist: greenlet<3.0.0
+
+# IA/ML - GIS Detection
+
+Componentes de machine learning e inteligencia artificial para el proyecto GIS Detection.
+
+## Descripción General
+
+La carpeta IA contiene todos los componentes de inteligencia artificial y machine learning utilizados para el análisis de detecciones geoespaciales. Incluye modelos de deep learning, scripts de entrenamiento, inferencia y procesamiento de datos geoespaciales con técnicas avanzadas de IA.
+
+## Estructura de Carpetas
+
+```
+IA/
+├── Configuration/          # Configuraciones y dependencias
+│   ├── Conda/              # Archivos de entorno conda
+│   └── requirements.txt    # Lista de dependencias
+├── Entrenamiento/          # Scripts y notebooks de entrenamiento
+├── Classification_Results/ # Resultados de clasificaciones
+├── Tif/                   # Archivos TIFF geoespaciales
+├── definitions.py          # Definiciones y utilidades comunes
+├── train_cnn_landcover.py # Script principal de entrenamiento
+├── inferencia_final_tesis.py # Script de inferencia
+├── modelo_unet_pro_final.keras # Modelo pre-entrenado
+├── pyproject.toml         # Gestión de dependencias con UV
+└── README.md              # Este archivo
+```
+
+## Instalación y Ejecución
+
+### Prerrequisitos
+
+- **Python**: Exactamente `3.9.25` (versión utilizada en el entorno conda)
+- **UV**: Gestor de paquetes Python (instalar con `pip install uv`)
+- **CUDA**: Para aceleración GPU (opcional pero recomendado)
+- **Memoria RAM**: Mínimo 8GB para entrenamiento
+
+### Instalación con UV
+
+1. **Navegar a la carpeta IA:**
+   ```bash
+   cd IA
+   ```
+
+2. **Crear entorno virtual e instalar dependencias:**
+   ```bash
+   uv sync
+   ```
+
+3. **Activar entorno virtual:**
+   ```bash
+   # Windows
+   .venv\Scripts\activate
+   
+   # Linux/Mac
+   source .venv/bin/activate
+   ```
+
+## Uso Básico
+
+### Entrenamiento de Modelos
+
+#### Entrenamiento de CNN para Land Cover Classification
+```bash
+uv run python train_cnn_landcover.py
+```
+
+Ejemplo de salida esperada:
+```
+Epoch 1/100
+1000/1000 [==============================] - 45s 45ms/step - loss: 0.8234 - accuracy: 0.7234
+...
+Modelo guardado en: models/modelo_unet_pro_final.keras
+```
+
+### Inferencia y Predicción
+
+#### Ejecutar Inferencia sobre Datos Nuevos
+```bash
+uv run python inferencia_final_tesis.py --input data/test_images/ --output results/
+```
+
+#### Inferencia Programática
+```python
+from tensorflow.keras.models import load_model
+import numpy as np
+
+# Cargar modelo pre-entrenado
+model = load_model('modelo_unet_pro_final.keras')
+
+# Realizar predicción
+predictions = model.predict(image_data)
+```
+
+### Jupyter Notebooks
+
+#### Iniciar Jupyter para Desarrollo Interactivo
+```bash
+uv run jupyter notebook
+```
+
+Acceso a notebooks en: http://localhost:8888
+
+## Requisitos Técnicos
+
+### Dependencias Principales
+
+| Componente | Versión | Descripción |
+|-------------|---------|-------------|
+| **Python** | `3.9.25` | Versión exacta del intérprete |
+| **TensorFlow** | `2.20.0+` | Framework de deep learning |
+| **Keras** | `3.10.0+` | API de alto nivel para redes neuronales |
+| **OpenCV** | `4.13.0+` | Procesamiento de imágenes y visión por computadora |
+| **Scikit-learn** | `1.6.1+` | Machine learning tradicional |
+
+### Librerías Clave
+
+- **Deep Learning**: `tensorflow`, `keras`, `ml-dtypes`
+- **Procesamiento de Imágenes**: `opencv-python`, `pillow`, `scikit-image`
+- **Geoespaciales**: `geopandas`, `rasterio`, `shapely`, `pyproj`
+- **Visualización**: `matplotlib`, `seaborn`, `plotly`
+- **Datos**: `numpy`, `pandas`, `xarray`, `pyarrow`
+
+### Configuración Requerida
+
+1. **Variables de Entorno**:
+   ```bash
+   export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+   export TF_ENABLE_ONEDNN_OPTS=1  # Optimización Intel
+   export CUDA_VISIBLE_DEVICES=0  # GPU selection
+   ```
+
+2. **Configuración de TensorFlow**:
+   ```python
+   import tensorflow as tf
+   print(f"TensorFlow Version: {tf.__version__}")
+   print(f"GPU Available: {tf.config.list_physical_devices('GPU')}")
+   ```
+
+## Modelos y Arquitecturas
+
+### Modelo Principal: UNet++
+
+- **Arquitectura**: UNet++ mejorada para segmentación semántica
+- **Clases**: 7 clases de land cover (agua, vegetación, urbano, etc.)
+- **Input**: 256x256 píxeles, 3 canales RGB
+- **Output**: Máscaras de segmentación 256x256
+- **Accuracy**: ~92% en conjunto de prueba
+
+### Métricas de Evaluación
+- **Precision**: 0.91
+- **Recall**: 0.89
+- **F1-Score**: 0.90
+- **IoU**: 0.85
+
+
+## 🤖 Automatización con Dagster
+
+El proyecto incluye un pipeline completo de automatización usando Dagster para orquestar todo el proceso de ML:
+
+### Arquitectura del Pipeline
+
+```
+Dagster Pipeline
+├── 1. gee_dataset_download     # Descarga datos desde GEE
+├── 2. data_preparation         # Prepara datos para entrenamiento  
+├── 3. model_building           # Construye modelo U-Net
+├── 4. model_training           # Entrena el modelo
+├── 5. model_evaluation         # Evalúa el modelo
+└── 6. pipeline_report          # Genera reporte final
+```
+
+### Instalación de Dagster
+
+```bash
+# Ya incluido en pyproject.toml
+uv sync  # Instalará dagster>=1.7.0
+```
+
+### Configuración
+
+1. **Configurar Google Earth Engine**:
+   ```bash
+   ee.Authenticate()
+   ee.Initialize(project='your-gcp-project-id')
+   ```
+
+2. **Actualizar project ID en gee_dataset_generator.py**:
+   ```python
+   PROJECT_ID = "your-gcp-project-id"  # Cambiar por tu project ID
+   ```
+
+### Ejecución del Pipeline
+
+#### Modo Desarrollo
+```bash
+cd IA
+uv run python run_dagster.py --mode dev --port 3000
+```
+
+Acceso a la UI de Dagster: http://localhost:3000
+
+#### Ejecución Manual del Pipeline Completo
+```bash
+cd IA
+uv run python dagster_pipeline.py
+```
+
+#### Ejecución de Etapas Individuales
+
+##### Descargar Dataset desde GEE
+```bash
+uv run python gee_dataset_generator.py
+```
+
+##### Entrenar Modelo Manualmente
+```bash
+uv run python train_cnn_landcover.py
+```
+
+### Archivos de Dagster
+
+- **`dagster_pipeline.py`** - Pipeline completo con 6 assets
+- **`gee_dataset_generator.py`** - Descarga automática desde GEE  
+- **`definitions.py`** - Definiciones de Dagster
+- **`dagster.yaml`** - Configuración de Dagster
+- **`run_dagster.py`** - Script para ejecutar Dagster
+
+### Flujo de Trabajo Automatizado
+
+1. **Descarga de Datos**: GEE descarga imágenes Sentinel-2 y etiquetas
+2. **Preparación**: Formatea datos para entrenamiento U-Net
+3. **Construcción**: Crea arquitectura del modelo
+4. **Entrenamiento**: Entrena con datos preparados
+5. **Evaluación**: Calcula métricas y matriz de confusión
+6. **Reporte**: Genera reporte completo del pipeline
+
+### Monitoreo y Logs
+
+Dagster proporciona:
+- **UI Web**: Monitoreo en tiempo real
+- **Logs Detallados**: Cada etapa con logging completo
+- **Historial**: Registro de todas las ejecuciones
+- **Métricas**: Tiempos de ejecución y rendimiento
+
+### Salidas del Pipeline
+
+- **Modelo Entrenado**: `modelo_unet_pro_final.keras`
+- **Historial**: `training_history.json`
+- **Métricas**: `evaluation_metrics.json`
+- **Matriz Confusión**: `confusion_matrix.png`
+- **Reporte Final**: `pipeline_report.json`
+
+##  Ejemplos de Uso
+
+### 1. Clasificación de Imágenes Satelitales
+```python
+from definitions import load_and_preprocess_image
+from tensorflow.keras.models import load_model
+
+# Cargar y preprocesar imagen
+image = load_and_preprocess_image('path/to/satellite_image.tif')
+
+# Cargar modelo y predecir
+model = load_model('modelo_unet_pro_final.keras')
+prediction = model.predict(image)
+
+# Post-procesamiento
+result = post_process_prediction(prediction)
+```
+
+### 2. Batch Processing
+```python
+import glob
+from inferencia_final_tesis import process_batch
+
+# Procesar múltiples imágenes
+image_files = glob.glob('data/*.tif')
+results = process_batch(image_files, model_path='modelo_unet_pro_final.keras')
+```
+
+### 3. Integración con Google Earth Engine
+```python
+import ee
+from gee_integration import download_ee_image
+
+# Autenticación y descarga
+ee.Authenticate()
+ee.Initialize()
+
+# Descargar imagen de GEE
+image = download_ee_image(image_id, region, scale=30)
+```
+
+## Optimización y Rendimiento
+
+### GPU Acceleration
+```bash
+# Verificar disponibilidad de GPU
+uv run python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+
+# Habilitar crecimiento de memoria GPU
+uv run python -c "
+import tensorflow as tf
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    tf.config.experimental.set_memory_growth(gpus[0], True)
+"
+```
+
+### Optimización de Memoria
+```python
+# Configurar TensorFlow para uso eficiente de memoria
+import tensorflow as tf
+tf.config.experimental.set_memory_growth(
+    tf.config.experimental.list_physical_devices('GPU')[0], True
+)
+```
+
+## Notas Importantes
+
+1. **Versión Python**: Es crucial usar Python 3.9.25 para compatibilidad con TensorFlow
+2. **Memoria**: El entrenamiento requiere mínimo 16GB RAM para datasets grandes
+3. **GPU**: Se recomienda GPU con mínimo 8GB VRAM para entrenamiento eficiente
+4. **Dataset**: Los datos de entrenamiento deben estar en formato TIFF georreferenciado
+
+##  Troubleshooting
+
+### Problemas Comunes
+
+1. **Error de memoria GPU**:
+   ```bash
+   export TF_FORCE_GPU_ALLOW_GROWTH=true
+   ```
+
+2. **Error de dependencias**:
+   ```bash
+   uv sync --refresh
+   ```
+
+3. **Error de CUDA**:
+   ```bash
+   # Verificar compatibilidad CUDA
+   uv run python -c "import tensorflow as tf; print(tf.test.is_built_with_cuda())"
+   ```
+
+4. **Error de carga de modelo**:
+   ```bash
+   # Verificar ruta y formato del modelo
+   uv run python -c "
+   from tensorflow.keras.models import load_model
+   model = load_model('modelo_unet_pro_final.keras')
+   print(model.summary())
+   "
+   ```
+
+## Documentación Adicional
+
+- [Documentación TensorFlow](https://www.tensorflow.org/)
+- [Documentación Keras](https://keras.io/)
+- [Documentación OpenCV](https://opencv.org/)
+- [Guía UV](https://docs.astral.sh/uv/)

@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+gis_detection_ia.egg-info/PKG-INFO
+gis_detection_ia.egg-info/SOURCES.txt
+gis_detection_ia.egg-info/dependency_links.txt
+gis_detection_ia.egg-info/requires.txt
+gis_detection_ia.egg-info/top_level.txt

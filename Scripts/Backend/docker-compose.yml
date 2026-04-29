@@ -1,0 +1,83 @@
+version: "3.9"
+
+services:
+
+  # ─── API Gateway ───────────────────────────────────────────────
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - AI_SERVICE_URL=http://ai_service:8001
+      - TILING_SERVICE_URL=http://tiling_service:8002
+      - GEE_SERVICE_URL=http://gee_service:8003
+      - EXPORT_SERVICE_URL=http://export_service:8004
+    depends_on:
+      - ai_service
+      - tiling_service
+      - gee_service
+      - export_service
+    networks:
+      - geo_network
+
+  # ─── AI / U-Net ────────────────────────────────────────────────
+  ai_service:
+    build: ./services/ai_service
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./shared/volumes/temp_outputs:/app/temp_outputs
+      - ./models:/app/models:ro          # read-only model mount
+    networks:
+      - geo_network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]        # remove if no GPU
+
+  # ─── Tiling ────────────────────────────────────────────────────
+  tiling_service:
+    build: ./services/tiling_service
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./shared/volumes/temp_outputs:/app/temp_outputs
+      - ./shared/volumes/tiles_outputs:/app/tiles_outputs
+    networks:
+      - geo_network
+
+  # ─── Google Earth Engine ───────────────────────────────────────
+  gee_service:
+    build: ./services/gee_service
+    ports:
+      - "8003:8003"
+    volumes:
+      - C:/Users/afuhe/.config/earthengine:/root/.config/earthengine:ro   # GEE auth
+    environment:
+      - GEE_PROJECT_ID=aifinal-480001
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gee_key
+    secrets:
+      - gee_key
+    networks:
+      - geo_network
+
+  # ─── Export / File serving ─────────────────────────────────────
+  export_service:
+    build: ./services/export_service
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./shared/volumes/temp_outputs:/app/temp_outputs
+    networks:
+      - geo_network
+
+secrets:
+  gee_key:
+    file: ./gee_credentials/aifinal-480001-f32e66f5f6ec.json
+
+networks:
+  geo_network:
+    driver: bridge

@@ -1,4 +1,117 @@
 [project]
+<<<<<<< HEAD
+name = "gis-detection-ia"
+version = "0.1.0"
+description = "Machine Learning and AI components for GIS Detection project"
+authors = [
+    {name = "Aramis Fuentes", email = "Afuheho1@gmail.com"},
+]
+dependencies = [
+    # Core Google Earth Engine API
+    "earthengine-api",
+    "google-cloud-storage>=3.3.0",
+    
+    # Geoespacial y Visualización
+    "geemap>=0.36.5",
+    "geopandas>=1.0.1",
+    "mapclassify>=2.8.1",
+    
+    # Procesamiento de Datos y Álgebra de Arreglos
+    "numpy>=1.26.4,<2",
+    "pandas>=2.3.1",
+    
+    # Manejo de Geometrías y Archivos Ráster/Vectorial
+    "shapely>=2.0.6",
+    "rasterio>=1.4.3",
+    "fiona",
+    
+    # Machine Learning y Deep Learning
+    "tensorflow>=2.20.0",
+    "keras>=3.10.0",
+    "scikit-learn>=1.6.1",
+    "patchify>=0.2.3",
+    
+    # Backend dependencies (if needed)
+    "fastapi>=0.123.5",
+    "uvicorn[standard]>=0.38.0",
+    "pydantic>=2.12.5",
+    
+    # Additional ML/Data Science dependencies from conda environment
+    "opencv-python>=4.11.0.86,<4.12.0.88",
+    "scipy>=1.13.1",
+    "matplotlib>=3.9.4",
+    "seaborn>=0.13.2",
+    "plotly>=6.3.0",
+    "xarray>=2024.7.0",
+    "pillow>=11.3.0",
+    
+    # Geospatial additional dependencies
+    "pyproj>=3.6.1",
+    "pyogrio>=0.11.0",
+    "pycrs>=1.0.2",
+    "morecantile>=6.2.0",
+    
+    # Google Cloud and Earth Engine additional dependencies
+    "google-auth>=2.40.3",
+    "google-auth-httplib2>=0.2.0",
+    "google-api-core>=2.25.1",
+    "google-api-python-client>=2.179.0",
+    "googleapis-common-protos>=1.70.0",
+    "google-resumable-media>=2.7.2",
+    "google-crc32c>=1.7.1",
+    "google-pasta>=0.2.0",
+    "geeadd>=0.5.6",
+    "gdown>=5.2.0",
+    
+    # Data processing utilities
+    "tqdm>=4.67.1",
+    "joblib>=1.5.1",
+    "pyarrow>=21.0.0",
+    "fsspec>=2025.6.0",
+    "gcsfs>=2025.6.0",
+    
+    # Jupyter and visualization (for notebooks)
+    "ipykernel>=6.30.1",
+    "ipython>=8.18.1",
+    "ipywidgets>=8.1.7",
+    "ipyleaflet>=0.20.0",
+    "jupyterlab-widgets>=3.0.15",
+    
+    # Additional utilities
+    "python-dotenv>=1.2.1",
+    "requests>=2.32.5",
+    "pyyaml>=6.0.3",
+    "click>=8.1.8",
+    "rich>=14.2.0",
+    "typer>=0.15.2",
+    "dagster>=1.5.0",
+    "dagster-webserver>=1.5.0",
+    "greenlet<3.0.0",
+]
+requires-python = ">=3.9,<3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-mock>=3.15.1",
+    "black>=24.10.0",
+    "isort>=5.13.2",
+    "flake8>=7.1.2",
+    "mypy>=1.15.0",
+    "jupyter>=1.1.1",
+    "notebook>=7.3.2",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = []
+=======
 name = "ia"
 version = "0.1.0"
 description = "Add your description here"
@@ -17,3 +130,4 @@ dependencies = [
 ]
 [tool.dagster]
 module_name = "definitions"
+>>>>>>> 3d9c498a1b922e991552aacc978efb95208c1338
