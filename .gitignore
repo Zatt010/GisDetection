@@ -3,3 +3,28 @@
 
 # Google Cloud Service Account Credentials
 Scripts/Backend/gee_credentials/*.json
+
+# Archivos temporales de Dagster
+.tmp_dagster_home_*
+
+# Entornos virtuales (el nombre más común es venv)
+venv/
+env/
+.env/
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribución / Paquetes
+dist/
+build/
+*.egg-info/
+
+# Variables de entorno (¡Seguridad!)
+.env
+
+# IDEs (Opcional, pero recomendado)
+.vscode/
+.idea/
