@@ -2,6 +2,7 @@ import os
 import zipfile
 import shutil
 from datetime import datetime
+import xml.etree.ElementTree as ET
 
 import numpy as np
 import rasterio
@@ -79,6 +80,51 @@ def _load_gdf(filename: str):
     return gdf, None
 
 
+def _export_kml_custom(gdf, output_path):
+    """Export GeoDataFrame to KML without using Fiona drivers"""
+    # Convert to WGS84 if needed
+    gdf_wgs84 = gdf.to_crs("EPSG:4326")
+    
+    # Create KML document
+    kml = ET.Element("kml", xmlns="http://www.opengis.net/kml/2.2")
+    document = ET.SubElement(kml, "Document")
+    
+    # Add name
+    ET.SubElement(document, "name").text = "Prediction Results"
+    
+    # Add styles for each class
+    for class_idx, class_name in enumerate(CLASSES):
+        style = ET.SubElement(document, "Style", id=f"style_{class_idx}")
+        poly_style = ET.SubElement(style, "PolyStyle")
+        color = CLASS_COLORS.get(class_idx, "#CCCCCC")
+        # Convert hex color to KML format (AABBGGRR)
+        kml_color = "ff" + color[5:7] + color[3:5] + color[1:3]
+        ET.SubElement(poly_style, "color").text = kml_color
+        ET.SubElement(poly_style, "fill").text = "1"
+        ET.SubElement(poly_style, "outline").text = "1"
+    
+    # Add features
+    for idx, row in gdf_wgs84.iterrows():
+        placemark = ET.SubElement(document, "Placemark")
+        ET.SubElement(placemark, "name").text = f"{row['class_name']} - {row['area_ha']:.2f} ha"
+        ET.SubElement(placemark, "styleUrl").text = f"#style_{int(row['class_index'])}"
+        
+        # Add geometry
+        geom = row.geometry
+        if geom.geom_type == "Polygon":
+            coords = geom.exterior.coords
+            coordinates = " ".join([f"{lon},{lat},0" for lon, lat in coords])
+            
+            polygon = ET.SubElement(placemark, "Polygon")
+            outer_boundary = ET.SubElement(polygon, "outerBoundaryIs")
+            linear_ring = ET.SubElement(outer_boundary, "LinearRing")
+            ET.SubElement(linear_ring, "coordinates").text = coordinates
+    
+    # Write to file
+    tree = ET.ElementTree(kml)
+    tree.write(output_path, encoding="utf-8", xml_declaration=True)
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 @app.post("/export_vector/{filename}")
 async def export_vector(filename: str, formato: str = "geojson"):
@@ -140,7 +186,7 @@ async def export_vector(filename: str, formato: str = "geojson"):
         # ── KML ───────────────────────────────────────────────────────────────
         elif fmt == "kml":
             kml_path = os.path.join(TEMP_DIR, f"prediction_{timestamp}.kml")
-            gdf.to_crs("EPSG:4326").to_file(kml_path, driver="KML", encoding="utf-8")
+            _export_kml_custom(gdf, kml_path)
             return {
                 "status":       "success",
                 "download_url": f"http://localhost:8004/download/prediction_{timestamp}.kml",
@@ -150,7 +196,7 @@ async def export_vector(filename: str, formato: str = "geojson"):
         # ── KMZ ───────────────────────────────────────────────────────────────
         elif fmt == "kmz":
             kml_path = os.path.join(TEMP_DIR, f"prediction_{timestamp}.kml")
-            gdf.to_crs("EPSG:4326").to_file(kml_path, driver="KML", encoding="utf-8")
+            _export_kml_custom(gdf, kml_path)
 
             kmz_path = os.path.join(TEMP_DIR, f"prediction_{timestamp}.kmz")
             with zipfile.ZipFile(kmz_path, "w", zipfile.ZIP_DEFLATED) as zipf:
