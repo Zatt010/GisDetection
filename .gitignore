@@ -28,3 +28,7 @@ build/
 # IDEs (Opcional, pero recomendado)
 .vscode/
 .idea/
+
+# Directorios temporales de salida
+temp_outputs/
+tiles_outputs/
