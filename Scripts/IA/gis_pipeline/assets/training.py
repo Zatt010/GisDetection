@@ -1,9 +1,3 @@
-"""
-Stage 2 — Prepare patches and train the U-Net Pro model.
-
-Inputs  : S2_Data_v4.tif (13 channels) + Labels_Data_v4.tif
-Outputs : modelo_unet_pro_v4.keras  +  training history JSON
-"""
 import os
 import json
 import numpy as np
@@ -21,10 +15,7 @@ from gis_pipeline.resources import PipelineConfig
 # ── Data preparation ──────────────────────────────────────────────────────────
 
 def _load_and_patch(config: PipelineConfig):
-    """
-    Load TIF files, normalize correctly (raw bands ÷ 10000, indices as-is),
-    and slice into (64×64×13) patches with 50% overlap.
-    """
+    
     # ── Image ────────────────────────────────────────────────────────────
     with rasterio.open(config.img_path) as src:
         img_raw = src.read().transpose(1, 2, 0).astype(np.float32)

@@ -173,6 +173,13 @@ uv run pytest --cov=services
 
 # Ejecutar pruebas específicas
 uv run pytest tests/test_gateway.py
+
+# Ejecutar coverage de integracion
+uv run pytest tests/integration/ --cov=gateway --cov=main --cov-report=term-missing --tb=no -q
+
+# Ejecutar coverage de pruebas unitarias
+uv run pytest tests/unit/ --cov=services --cov-report=term-missing --tb=no -q
+
 ```
 
 ## Notas Importantes
